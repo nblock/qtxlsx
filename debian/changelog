@@ -1,3 +1,9 @@
+qtxlsx (0.2.2-2) unstable; urgency=medium
+
+  * [c94e19c] Create a empty .git directory to trigger syncqt.
+
+ -- Florian Preinstorfer <fp@xell.at>  Wed, 10 Sep 2014 11:28:09 +0200
+
 qtxlsx (0.2.2-1) unstable; urgency=low
 
   * Initial release
