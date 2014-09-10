@@ -9,4 +9,6 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 	dh $@
 
 override_dh_auto_configure:
+	# The existence of an empty .git directory triggers syncqt.
+	mkdir .git || true
 	qmake -r
