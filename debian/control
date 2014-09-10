@@ -1,0 +1,41 @@
+Source: qtxlsx
+Priority: extra
+Maintainer: Florian Preinstorfer <fp@xell.at>
+Build-Depends: debhelper (>= 9.0.0),
+               qt5-default (>= 5.3.1),
+               qtbase5-private-dev (>= 5.3.1),
+               qttools5-dev (>= 5.3.1),
+               qttools5-dev-tools (>= 5.3.1),
+Standards-Version: 3.9.5
+Section: libs
+Homepage: http://qtxlsx.debao.me
+Vcs-Browser: https://github.com/nblock/qtxlsx
+Vcs-Git: git://github.com/nblock/qtxlsx.git
+
+Package: libqt5xlsx0
+Architecture: any
+Multi-Arch: same
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Pre-Depends: ${misc:Pre-Depends}
+Description: Qt library to read and write xlsx files
+ QtXlsx is a Qt5 library that can read and write Microsoft Excel spreadsheet
+ files in xlsx format.
+ .
+ It may be used to:
+  * Generate a new .xlsx file from scratch
+  * Extract data from an existing .xlsx file
+  * Edit an existing .xlsx file
+
+Package: libqt5xlsx0-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: libqt5xlsx0 (= ${binary:Version}), ${misc:Depends}
+Description: Development files for qtxlsx
+ QtXlsx is a Qt5 library that can read and write Microsoft Excel spreadsheet
+ files in xlsx format.
+ .
+ It may be used to:
+  * Generate a new .xlsx file from scratch
+  * Extract data from an existing .xlsx file
+  * Edit an existing .xlsx file

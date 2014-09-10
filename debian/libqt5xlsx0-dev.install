@@ -1,0 +1,4 @@
+usr/include/*/qt5
+usr/lib/*/cmake/Qt5Xlsx/*.cmake
+usr/lib/*/libQt0Xlsx.so
+usr/lib/*/pkgconfig/*.pc
