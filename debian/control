@@ -39,3 +39,16 @@ Description: Development files for qtxlsx
   * Generate a new .xlsx file from scratch
   * Extract data from an existing .xlsx file
   * Edit an existing .xlsx file
+
+Package: libqt5xlsx0-doc
+Section: doc
+Architecture: all
+Depends: ${misc:Depends}
+Description: Documentation for qtxlsx
+ QtXlsx is a Qt5 library that can read and write Microsoft Excel spreadsheet
+ files in xlsx format.
+ .
+ It may be used to:
+  * Generate a new .xlsx file from scratch
+  * Extract data from an existing .xlsx file
+  * Edit an existing .xlsx file

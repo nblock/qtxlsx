@@ -12,3 +12,11 @@ override_dh_auto_configure:
 	# The existence of an empty .git directory triggers syncqt.
 	mkdir .git || true
 	qmake -r
+
+override_dh_auto_build:
+	dh_auto_build
+	make html_docs
+
+override_dh_auto_install:
+	dh_auto_install
+	make INSTALL_ROOT=$(CURDIR)/debian/tmp install_html_docs
