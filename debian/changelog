@@ -1,3 +1,9 @@
+qtxlsx (0.2.2+git20140919-1) unstable; urgency=medium
+
+  * [dbe4440] Imported Upstream version 0.2.2+git20140919
+
+ -- Florian Preinstorfer <fp@xell.at>  Fri, 19 Sep 2014 08:42:02 +0200
+
 qtxlsx (0.2.2-3) unstable; urgency=medium
 
   * [3c32b08] Add libqt5xlsx0-doc.
