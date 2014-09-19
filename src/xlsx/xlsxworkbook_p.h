@@ -37,7 +37,9 @@
 //
 
 #include "xlsxworkbook.h"
+#include "xlsxabstractooxmlfile_p.h"
 #include "xlsxtheme_p.h"
+#include "xlsxsimpleooxmlfile_p.h"
 #include "xlsxrelationships_p.h"
 
 #include <QSharedPointer>
@@ -45,16 +47,6 @@
 #include <QStringList>
 
 namespace QXlsx {
-
-struct XlsxSheetItemInfo
-{
-    XlsxSheetItemInfo(){}
-
-    QString name;
-    int sheetId;
-    QString rId;
-    QString state;
-};
 
 struct XlsxDefineNameData
 {
@@ -73,27 +65,25 @@ struct XlsxDefineNameData
     int sheetId;
 };
 
-class WorkbookPrivate
+class WorkbookPrivate : public AbstractOOXmlFilePrivate
 {
     Q_DECLARE_PUBLIC(Workbook)
 public:
-    WorkbookPrivate(Workbook *q);
-
-    Workbook *q_ptr;
-    mutable Relationships relationships;
+    WorkbookPrivate(Workbook *q, Workbook::CreateFlag flag);
 
     QSharedPointer<SharedStrings> sharedStrings;
-    QList<QSharedPointer<Worksheet> > worksheets;
-    QStringList worksheetNames;
+    QList<QSharedPointer<AbstractSheet> > sheets;
+    QList<QSharedPointer<SimpleOOXmlFile> > externalLinks;
+    QStringList sheetNames;
     QSharedPointer<Styles> styles;
     QSharedPointer<Theme> theme;
-    QList<QImage> images;
-    QList<Drawing *> drawings;
+    QList<QSharedPointer<MediaFile> > mediaFiles;
+    QList<QSharedPointer<Chart> > chartFiles;
     QList<XlsxDefineNameData> definedNamesList;
 
-    QList<XlsxSheetItemInfo> sheetItemInfoList;//Data from xml file
-
     bool strings_to_numbers_enabled;
+    bool strings_to_hyperlinks_enabled;
+    bool html_to_richstring_enabled;
     bool date1904;
     QString defaultDateFormat;
 
@@ -107,7 +97,8 @@ public:
     int table_count;
 
     //Used to generate new sheet name and id
-    int last_sheet_index;
+    int last_worksheet_index;
+    int last_chartsheet_index;
     int last_sheet_id;
 };
 

@@ -37,51 +37,34 @@
 // We mean it.
 //
 
+#include "xlsxrelationships_p.h"
+#include "xlsxabstractooxmlfile.h"
+
 #include <QList>
 #include <QString>
+#include <QSharedPointer>
 
 class QIODevice;
 class QXmlStreamWriter;
 
 namespace QXlsx {
 
-struct XlsxDrawingDimensionData
-{
-    int drawing_type;
-    int col_from;
-    int row_from;
-    double col_from_offset;
-    double row_from_offset;
-    int col_to;
-    int row_to;
-    double col_to_offset;
-    double row_to_offset;
-    int col_absolute;
-    int row_absolute;
-    int width;
-    int height;
-    QString description;
-    int shape;
-};
+class DrawingAnchor;
+class Workbook;
+class AbstractSheet;
+class MediaFile;
 
-class Drawing
+class Drawing : public AbstractOOXmlFile
 {
 public:
-    Drawing();
+    Drawing(AbstractSheet *sheet, CreateFlag flag);
+    ~Drawing();
     void saveToXmlFile(QIODevice *device) const;
-    QByteArray saveToXmlData() const;
+    bool loadFromXmlFile(QIODevice *device);
 
-    bool embedded;
-    int orientation;
-    QList <XlsxDrawingDimensionData *> dimensionList;
-
-private:
-    void writeTwoCellAnchor(QXmlStreamWriter &writer, int index, XlsxDrawingDimensionData *data) const;
-    void writeAbsoluteAnchor(QXmlStreamWriter &writer, int index) const;
-    void writePos(QXmlStreamWriter &writer, int x, int y) const;
-    void writeExt(QXmlStreamWriter &writer, int cx, int cy) const;
-    void writeGraphicFrame(QXmlStreamWriter &writer, int index, const QString &name=QString()) const;
-    void writePicture(QXmlStreamWriter &writer, int index, double col_abs, double row_abs, int width, int height, const QString &description) const;
+    AbstractSheet *sheet;
+    Workbook *workbook;
+    QList<DrawingAnchor *> anchors;
 };
 
 } // namespace QXlsx

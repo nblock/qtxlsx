@@ -31,13 +31,13 @@
 #include <QXmlStreamReader>
 #include <QDir>
 #include <QFile>
-#include <QRegularExpression>
 #include <QDebug>
 #include <QBuffer>
 
 namespace QXlsx {
 
-SharedStrings::SharedStrings()
+SharedStrings::SharedStrings(CreateFlag flag)
+    :AbstractOOXmlFile(flag)
 {
     m_stringCount = 0;
 }
@@ -216,10 +216,8 @@ void SharedStrings::saveToXmlFile(QIODevice *device) const
                     writer.writeEndElement();// rPr
                 }
                 writer.writeStartElement(QStringLiteral("t"));
-                if (string.fragmentText(i).contains(QRegularExpression(QStringLiteral("^\\s")))
-                        || string.fragmentText(i).contains(QRegularExpression(QStringLiteral("\\s$")))) {
+                if (isSpaceReserveNeeded(string.fragmentText(i)))
                     writer.writeAttribute(QStringLiteral("xml:space"), QStringLiteral("preserve"));
-                }
                 writer.writeCharacters(string.fragmentText(i));
                 writer.writeEndElement();// t
 
@@ -228,10 +226,8 @@ void SharedStrings::saveToXmlFile(QIODevice *device) const
         } else {
             writer.writeStartElement(QStringLiteral("t"));
             QString pString = string.toPlainString();
-            if (pString.contains(QRegularExpression(QStringLiteral("^\\s")))
-                    || pString.contains(QRegularExpression(QStringLiteral("\\s$")))) {
+            if (isSpaceReserveNeeded(pString))
                 writer.writeAttribute(QStringLiteral("xml:space"), QStringLiteral("preserve"));
-            }
             writer.writeCharacters(pString);
             writer.writeEndElement();//t
         }
@@ -240,16 +236,6 @@ void SharedStrings::saveToXmlFile(QIODevice *device) const
 
     writer.writeEndElement(); //sst
     writer.writeEndDocument();
-}
-
-QByteArray SharedStrings::saveToXmlData() const
-{
-    QByteArray data;
-    QBuffer buffer(&data);
-    buffer.open(QIODevice::WriteOnly);
-    saveToXmlFile(&buffer);
-
-    return data;
 }
 
 void SharedStrings::readString(QXmlStreamReader &reader)
@@ -382,15 +368,6 @@ bool SharedStrings::loadFromXmlFile(QIODevice *device)
     }
 
     return true;
-}
-
-bool SharedStrings::loadFromXmlData(const QByteArray &data)
-{
-    QBuffer buffer;
-    buffer.setData(data);
-    buffer.open(QIODevice::ReadOnly);
-
-    return loadFromXmlFile(&buffer);
 }
 
 } //namespace

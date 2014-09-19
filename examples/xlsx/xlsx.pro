@@ -14,6 +14,9 @@ SUBDIRS = hello \
     conditionalformatting \
     worksheetoperations \
     hyperlinks \
+    chart \
+    chartsheet \
+    calendar \
     demo
 
 qtHaveModule(widgets): SUBDIRS += xlsxwidget

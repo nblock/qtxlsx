@@ -42,7 +42,7 @@ WorksheetTest::WorksheetTest()
 
 void WorksheetTest::testEmptySheet()
 {
-    QXlsx::Worksheet sheet("", 1, 0);
+    QXlsx::Worksheet sheet("", 1, 0, QXlsx::Worksheet::F_NewFromScratch);
     sheet.write("B1", 123);
     QByteArray xmldata = sheet.saveToXmlData();
 
@@ -51,7 +51,7 @@ void WorksheetTest::testEmptySheet()
 
 void WorksheetTest::testDimension()
 {
-    QXlsx::Worksheet sheet("", 1, 0);
+    QXlsx::Worksheet sheet("", 1, 0, QXlsx::Worksheet::F_NewFromScratch);
     QCOMPARE(sheet.dimension(), QXlsx::CellRange()); //Default
 
     sheet.write("C3", "Test");
@@ -70,7 +70,7 @@ void WorksheetTest::testDimension()
 
 void WorksheetTest::testSheetView()
 {
-    QXlsx::Worksheet sheet("", 1, 0);
+    QXlsx::Worksheet sheet("", 1, 0, QXlsx::Worksheet::F_NewFromScratch);
     sheet.setGridLinesVisible(false);
     sheet.setWindowProtected(true);
     QByteArray xmldata = sheet.saveToXmlData();
@@ -81,11 +81,11 @@ void WorksheetTest::testSheetView()
 
 void WorksheetTest::testSetColumn()
 {
-    QXlsx::Worksheet sheet("", 1, 0);
-    sheet.setColumn(1, 11, 20.0); //"A:K"
-    sheet.setColumn(4, 8, 10.0); //"D:H"
-    sheet.setColumn(6, 6, 15.0); //"F:F"
-    sheet.setColumn(1, 9, 8.8); //"A:H"
+    QXlsx::Worksheet sheet("", 1, 0, QXlsx::Worksheet::F_NewFromScratch);
+    sheet.setColumnWidth(1, 11, 20.0); //"A:K"
+    sheet.setColumnWidth(4, 8, 10.0); //"D:H"
+    sheet.setColumnWidth(6, 6, 15.0); //"F:F"
+    sheet.setColumnWidth(1, 9, 8.8); //"A:H"
 
     QByteArray xmldata = sheet.saveToXmlData();
 
@@ -100,7 +100,7 @@ void WorksheetTest::testSetColumn()
 
 void WorksheetTest::testWriteCells()
 {
-    QXlsx::Worksheet sheet("", 1, 0);
+    QXlsx::Worksheet sheet("", 1, 0, QXlsx::Worksheet::F_NewFromScratch);
     sheet.write("A1", 123);
     sheet.write("A2", "Hello");
     sheet.writeInlineString(3, 1, "Hello inline"); //A3
@@ -117,12 +117,12 @@ void WorksheetTest::testWriteCells()
     QVERIFY2(xmldata.contains("<c r=\"A5\" t=\"str\"><f>44+33</f><v>0</v></c>"), "formula");
     QVERIFY2(xmldata.contains("<c r=\"B5\" t=\"str\"><f>44+33</f><v>77</v></c>"), "formula");
 
-    QCOMPARE(sheet.d_ptr->sharedStrings()->getSharedString(0).toPlainString(), QStringLiteral("Hello"));
+    QCOMPARE(sheet.d_func()->sharedStrings()->getSharedString(0).toPlainString(), QStringLiteral("Hello"));
 }
 
 void WorksheetTest::testWriteHyperlinks()
 {
-    QXlsx::Worksheet sheet("", 1, 0);
+    QXlsx::Worksheet sheet("", 1, 0, QXlsx::Worksheet::F_NewFromScratch);
     sheet.write("A1", QUrl::fromUserInput("http://qt-project.org"));
     sheet.write("B1", QUrl::fromUserInput("http://qt-project.org/abc"));
     sheet.write("C1", QUrl::fromUserInput("http://qt-project.org/abc.html#test"));
@@ -137,21 +137,21 @@ void WorksheetTest::testWriteHyperlinks()
     QVERIFY2(xmldata.contains("<hyperlink ref=\"D1\" r:id=\"rId4\"/>"), "mail");
     QVERIFY2(xmldata.contains("<hyperlink ref=\"E1\" r:id=\"rId5\"/>"), "mail with subject");
 
-    QCOMPARE(sheet.d_ptr->sharedStrings()->getSharedString(0).toPlainString(), QStringLiteral("http://qt-project.org"));
-    QCOMPARE(sheet.d_ptr->sharedStrings()->getSharedString(1).toPlainString(), QStringLiteral("http://qt-project.org/abc"));
-    QCOMPARE(sheet.d_ptr->sharedStrings()->getSharedString(2).toPlainString(), QStringLiteral("http://qt-project.org/abc.html#test"));
-    QCOMPARE(sheet.d_ptr->sharedStrings()->getSharedString(3).toPlainString(), QStringLiteral("xyz@debao.me"));
-    QCOMPARE(sheet.d_ptr->sharedStrings()->getSharedString(4).toPlainString(), QStringLiteral("xyz@debao.me?subject=Test"));
+    QCOMPARE(sheet.d_func()->sharedStrings()->getSharedString(0).toPlainString(), QStringLiteral("http://qt-project.org"));
+    QCOMPARE(sheet.d_func()->sharedStrings()->getSharedString(1).toPlainString(), QStringLiteral("http://qt-project.org/abc"));
+    QCOMPARE(sheet.d_func()->sharedStrings()->getSharedString(2).toPlainString(), QStringLiteral("http://qt-project.org/abc.html#test"));
+    QCOMPARE(sheet.d_func()->sharedStrings()->getSharedString(3).toPlainString(), QStringLiteral("xyz@debao.me"));
+    QCOMPARE(sheet.d_func()->sharedStrings()->getSharedString(4).toPlainString(), QStringLiteral("xyz@debao.me?subject=Test"));
 }
 
 void WorksheetTest::testWriteDataValidations()
 {
-    QXlsx::Worksheet sheet("", 1, 0);
+    QXlsx::Worksheet sheet("", 1, 0, QXlsx::Worksheet::F_NewFromScratch);
     QXlsx::DataValidation validation(QXlsx::DataValidation::Whole);
     validation.setFormula1("10");
     validation.setFormula2("100");
     validation.addCell("A1");
-    validation.addCell("C2:C4");
+    validation.addRange("C2:C4");
     sheet.addDataValidation(validation);
 
     QByteArray xmldata = sheet.saveToXmlData();
@@ -160,7 +160,7 @@ void WorksheetTest::testWriteDataValidations()
 
 void WorksheetTest::testMerge()
 {
-    QXlsx::Worksheet sheet("", 1, 0);
+    QXlsx::Worksheet sheet("", 1, 0, QXlsx::Worksheet::F_NewFromScratch);
     sheet.write("B1", 123);
     sheet.mergeCells("B1:B5");
     QByteArray xmldata = sheet.saveToXmlData();
@@ -170,7 +170,7 @@ void WorksheetTest::testMerge()
 
 void WorksheetTest::testUnMerge()
 {
-    QXlsx::Worksheet sheet("", 1, 0);
+    QXlsx::Worksheet sheet("", 1, 0, QXlsx::Worksheet::F_NewFromScratch);
     sheet.write("B1", 123);
     sheet.mergeCells("B1:B5");
     sheet.unmergeCells("B1:B5");
@@ -197,11 +197,11 @@ void WorksheetTest::testReadSheetData()
     QXmlStreamReader reader(xmlData);
     reader.readNextStartElement();//current node is sheetData
 
-    QXlsx::Worksheet sheet("", 1, 0);
-    sheet.d_ptr->sharedStrings()->addSharedString("Hello");
-    sheet.d_ptr->loadXmlSheetData(reader);
+    QXlsx::Worksheet sheet("", 1, 0, QXlsx::Worksheet::F_LoadFromExists);
+    sheet.d_func()->sharedStrings()->addSharedString("Hello");
+    sheet.d_func()->loadXmlSheetData(reader);
 
-    QCOMPARE(sheet.d_ptr->cellTable.size(), 2);
+    QCOMPARE(sheet.d_func()->cellTable.size(), 2);
 
     //A1
     QCOMPARE(sheet.cellAt("A1")->dataType(), QXlsx::Cell::String);
@@ -238,11 +238,11 @@ void WorksheetTest::testReadColsInfo()
     QXmlStreamReader reader(xmlData);
     reader.readNextStartElement();//current node is cols
 
-    QXlsx::Worksheet sheet("", 1, 0);
-    sheet.d_ptr->loadXmlColumnsInfo(reader);
+    QXlsx::Worksheet sheet("", 1, 0, QXlsx::Worksheet::F_LoadFromExists);
+    sheet.d_func()->loadXmlColumnsInfo(reader);
 
-    QCOMPARE(sheet.d_ptr->colsInfo.size(), 1);
-    QCOMPARE(sheet.d_ptr->colsInfo[9]->width, 5.0);
+    QCOMPARE(sheet.d_func()->colsInfo.size(), 1);
+    QCOMPARE(sheet.d_func()->colsInfo[9]->width, 5.0);
 }
 
 void WorksheetTest::testReadRowsInfo()
@@ -258,11 +258,11 @@ void WorksheetTest::testReadRowsInfo()
     QXmlStreamReader reader(xmlData);
     reader.readNextStartElement();//current node is sheetData
 
-    QXlsx::Worksheet sheet("", 1, 0);
-    sheet.d_ptr->loadXmlSheetData(reader);
+    QXlsx::Worksheet sheet("", 1, 0, QXlsx::Worksheet::F_LoadFromExists);
+    sheet.d_func()->loadXmlSheetData(reader);
 
-    QCOMPARE(sheet.d_ptr->rowsInfo.size(), 1);
-    QCOMPARE(sheet.d_ptr->rowsInfo[3]->height, 40.0);
+    QCOMPARE(sheet.d_func()->rowsInfo.size(), 1);
+    QCOMPARE(sheet.d_func()->rowsInfo[3]->height, 40.0);
 }
 
 void WorksheetTest::testReadMergeCells()
@@ -272,11 +272,11 @@ void WorksheetTest::testReadMergeCells()
     QXmlStreamReader reader(xmlData);
     reader.readNextStartElement();//current node is mergeCells
 
-    QXlsx::Worksheet sheet("", 1, 0);
-    sheet.d_ptr->loadXmlMergeCells(reader);
+    QXlsx::Worksheet sheet("", 1, 0, QXlsx::Worksheet::F_LoadFromExists);
+    sheet.d_func()->loadXmlMergeCells(reader);
 
-    QCOMPARE(sheet.d_ptr->merges.size(), 2);
-    QCOMPARE(sheet.d_ptr->merges[0].toString(), QStringLiteral("B1:B5"));
+    QCOMPARE(sheet.d_func()->merges.size(), 2);
+    QCOMPARE(sheet.d_func()->merges[0].toString(), QStringLiteral("B1:B5"));
 }
 
 void WorksheetTest::testReadDataValidations()
@@ -289,11 +289,11 @@ void WorksheetTest::testReadDataValidations()
     QXmlStreamReader reader(xmlData);
     reader.readNextStartElement();//current node is dataValidations
 
-    QXlsx::Worksheet sheet("", 1, 0);
-    sheet.d_ptr->loadXmlDataValidations(reader);
+    QXlsx::Worksheet sheet("", 1, 0, QXlsx::Worksheet::F_LoadFromExists);
+    sheet.d_func()->loadXmlDataValidations(reader);
 
-    QCOMPARE(sheet.d_ptr->dataValidationsList.size(), 2);
-    QCOMPARE(sheet.d_ptr->dataValidationsList[0].validationType(), QXlsx::DataValidation::Whole);
+    QCOMPARE(sheet.d_func()->dataValidationsList.size(), 2);
+    QCOMPARE(sheet.d_func()->dataValidationsList[0].validationType(), QXlsx::DataValidation::Whole);
 }
 
 QTEST_APPLESS_MAIN(WorksheetTest)

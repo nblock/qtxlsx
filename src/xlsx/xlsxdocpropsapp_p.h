@@ -37,6 +37,7 @@
 //
 
 #include "xlsxglobal.h"
+#include "xlsxabstractooxmlfile.h"
 #include <QList>
 #include <QPair>
 #include <QStringList>
@@ -46,10 +47,10 @@ class QIODevice;
 
 namespace QXlsx {
 
-class XLSX_AUTOTEST_EXPORT DocPropsApp
+class XLSX_AUTOTEST_EXPORT DocPropsApp : public AbstractOOXmlFile
 {
 public:
-    DocPropsApp();
+    DocPropsApp(CreateFlag flag);
     
     void addPartTitle(const QString &title);
     void addHeadingPair(const QString &name, int value);
@@ -58,10 +59,8 @@ public:
     QString property(const QString &name) const;
     QStringList propertyNames() const;
 
-    QByteArray saveToXmlData() const;
     void saveToXmlFile(QIODevice *device) const;
-    static DocPropsApp loadFromXmlFile(QIODevice *device);
-    static DocPropsApp loadFromXmlData(const QByteArray &data);
+    bool loadFromXmlFile(QIODevice *device);
 
 private:
     QStringList m_titlesOfPartsList;

@@ -24,25 +24,22 @@
 ****************************************************************************/
 #include "xlsxcontenttypes_p.h"
 #include <QXmlStreamWriter>
+#include <QXmlStreamReader>
 #include <QFile>
 #include <QMapIterator>
 #include <QBuffer>
+#include <QDebug>
 
 namespace QXlsx {
 
-ContentTypes::ContentTypes()
+ContentTypes::ContentTypes(CreateFlag flag)
+    :AbstractOOXmlFile(flag)
 {
     m_package_prefix = QStringLiteral("application/vnd.openxmlformats-package.");
     m_document_prefix = QStringLiteral("application/vnd.openxmlformats-officedocument.");
 
     m_defaults.insert(QStringLiteral("rels"), m_package_prefix + QStringLiteral("relationships+xml"));
     m_defaults.insert(QStringLiteral("xml"), QStringLiteral("application/xml"));
-
-    m_overrides.insert(QStringLiteral("/docProps/app.xml"), m_document_prefix + QStringLiteral("extended-properties+xml"));
-    m_overrides.insert(QStringLiteral("/docProps/core.xml"), m_package_prefix + QStringLiteral("core-properties+xml"));
-    m_overrides.insert(QStringLiteral("/xl/styles.xml"), m_document_prefix + QStringLiteral("spreadsheetml.styles+xml"));
-    m_overrides.insert(QStringLiteral("/xl/theme/theme1.xml"), m_document_prefix + QStringLiteral("theme+xml"));
-    m_overrides.insert(QStringLiteral("/xl/workbook.xml"), m_document_prefix + QStringLiteral("spreadsheetml.sheet.main+xml"));
 }
 
 void ContentTypes::addDefault(const QString &key, const QString &value)
@@ -53,6 +50,31 @@ void ContentTypes::addDefault(const QString &key, const QString &value)
 void ContentTypes::addOverride(const QString &key, const QString &value)
 {
     m_overrides.insert(key, value);
+}
+
+void ContentTypes::addDocPropApp()
+{
+    addOverride(QStringLiteral("/docProps/app.xml"), m_document_prefix + QStringLiteral("extended-properties+xml"));
+}
+
+void ContentTypes::addDocPropCore()
+{
+    addOverride(QStringLiteral("/docProps/core.xml"), m_package_prefix + QStringLiteral("core-properties+xml"));
+}
+
+void ContentTypes::addStyles()
+{
+    addOverride(QStringLiteral("/xl/styles.xml"), m_document_prefix + QStringLiteral("spreadsheetml.styles+xml"));
+}
+
+void ContentTypes::addTheme()
+{
+    addOverride(QStringLiteral("/xl/theme/theme1.xml"), m_document_prefix + QStringLiteral("theme+xml"));
+}
+
+void ContentTypes::addWorkbook()
+{
+    addOverride(QStringLiteral("/xl/workbook.xml"), m_document_prefix + QStringLiteral("spreadsheetml.sheet.main+xml"));
 }
 
 void ContentTypes::addWorksheetName(const QString &name)
@@ -80,15 +102,14 @@ void ContentTypes::addCommentName(const QString &name)
     addOverride(QStringLiteral("/xl/%1.xml").arg(name), m_document_prefix + QStringLiteral("spreadsheetml.comments+xml"));
 }
 
-void ContentTypes::addImageTypes(const QStringList &imageTypes)
-{
-    foreach (QString type, imageTypes)
-        addDefault(type, QStringLiteral("image/") + type);
-}
-
 void ContentTypes::addTableName(const QString &name)
 {
     addOverride(QStringLiteral("/xl/tables/%1.xml").arg(name), m_document_prefix + QStringLiteral("spreadsheetml.table+xml"));
+}
+
+void ContentTypes::addExternalLinkName(const QString &name)
+{
+    addOverride(QStringLiteral("/xl/externalLinks/%1.xml").arg(name), m_document_prefix + QStringLiteral("spreadsheetml.externalLink+xml"));
 }
 
 void ContentTypes::addSharedString()
@@ -112,13 +133,9 @@ void ContentTypes::addVbaProject()
     addOverride(QStringLiteral("bin"), QStringLiteral("application/vnd.ms-office.vbaProject"));
 }
 
-QByteArray ContentTypes::saveToXmlData() const
+void ContentTypes::clearOverrides()
 {
-    QByteArray data;
-    QBuffer buffer(&data);
-    buffer.open(QIODevice::WriteOnly);
-    saveToXmlFile(&buffer);
-    return data;
+    m_overrides.clear();
 }
 
 void ContentTypes::saveToXmlFile(QIODevice *device) const
@@ -154,6 +171,35 @@ void ContentTypes::saveToXmlFile(QIODevice *device) const
     writer.writeEndElement();//Types
     writer.writeEndDocument();
 
+}
+
+bool ContentTypes::loadFromXmlFile(QIODevice *device)
+{
+    m_defaults.clear();
+    m_overrides.clear();
+
+    QXmlStreamReader reader(device);
+    while (!reader.atEnd()) {
+        QXmlStreamReader::TokenType token = reader.readNext();
+        if (token == QXmlStreamReader::StartElement) {
+            if (reader.name() == QLatin1String("Default")) {
+                QXmlStreamAttributes attrs = reader.attributes();
+                QString extension = attrs.value(QLatin1String("Extension")).toString();
+                QString type = attrs.value(QLatin1String("ContentType")).toString();
+                m_defaults.insert(extension, type);
+            } else if (reader.name() == QLatin1String("Override")) {
+                QXmlStreamAttributes attrs = reader.attributes();
+                QString partName = attrs.value(QLatin1String("PartName")).toString();
+                QString type = attrs.value(QLatin1String("ContentType")).toString();
+                m_overrides.insert(partName, type);
+            }
+        }
+
+        if (reader.hasError()) {
+            qDebug()<<reader.errorString();
+        }
+    }
+    return true;
 }
 
 } //namespace QXlsx
