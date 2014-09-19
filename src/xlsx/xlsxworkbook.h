@@ -26,6 +26,8 @@
 #define XLSXWORKBOOK_H
 
 #include "xlsxglobal.h"
+#include "xlsxabstractooxmlfile.h"
+#include "xlsxabstractsheet.h"
 #include <QList>
 #include <QImage>
 #include <QSharedPointer>
@@ -34,7 +36,6 @@ class QIODevice;
 
 QT_BEGIN_NAMESPACE_XLSX
 
-class Worksheet;
 class SharedStrings;
 class Styles;
 class Drawing;
@@ -42,27 +43,30 @@ class Document;
 class Theme;
 class Relationships;
 class DocumentPrivate;
+class MediaFile;
+class Chart;
+class Chartsheet;
+class Worksheet;
 
 class WorkbookPrivate;
-class Q_XLSX_EXPORT Workbook
+class Q_XLSX_EXPORT Workbook : public AbstractOOXmlFile
 {
     Q_DECLARE_PRIVATE(Workbook)
 public:
     ~Workbook();
 
-    Q_DECL_DEPRECATED QList<QSharedPointer<Worksheet> > worksheets() const;
-    int worksheetCount() const;
-    Worksheet *worksheet(int sheetIndex) const;
+    int sheetCount() const;
+    AbstractSheet *sheet(int index) const;
 
-    Worksheet *addWorksheet(const QString &name = QString());
-    Worksheet *insertWorkSheet(int index, const QString &name = QString());
-    bool renameWorksheet(int index, const QString &name);
-    bool deleteWorksheet(int index);
-    bool copyWorksheet(int index, const QString &newName=QString());
-    bool moveWorksheet(int srcIndex, int distIndex);
+    AbstractSheet *addSheet(const QString &name = QString(), AbstractSheet::SheetType type = AbstractSheet::ST_WorkSheet);
+    AbstractSheet *insertSheet(int index, const QString &name = QString(), AbstractSheet::SheetType type = AbstractSheet::ST_WorkSheet);
+    bool renameSheet(int index, const QString &name);
+    bool deleteSheet(int index);
+    bool copySheet(int index, const QString &newName=QString());
+    bool moveSheet(int srcIndex, int distIndex);
 
-    Worksheet *activeWorksheet() const;
-    bool setActiveWorksheet(int index);
+    AbstractSheet *activeSheet() const;
+    bool setActiveSheet(int index);
 
 //    void addChart();
     bool defineName(const QString &name, const QString &formula, const QString &comment=QString(), const QString &scope=QString());
@@ -70,32 +74,39 @@ public:
     void setDate1904(bool date1904);
     bool isStringsToNumbersEnabled() const;
     void setStringsToNumbersEnabled(bool enable=true);
+    bool isStringsToHyperlinksEnabled() const;
+    void setStringsToHyperlinksEnabled(bool enable=true);
+    bool isHtmlToRichStringEnabled() const;
+    void setHtmlToRichStringEnabled(bool enable=true);
     QString defaultDateFormat() const;
     void setDefaultDateFormat(const QString &format);
 
+    //internal used member
+    void addMediaFile(QSharedPointer<MediaFile> media, bool force=false);
+    QList<QSharedPointer<MediaFile> > mediaFiles() const;
+    void addChartFile(QSharedPointer<Chart> chartFile);
+    QList<QSharedPointer<Chart> > chartFiles() const;
+
 private:
     friend class Worksheet;
+    friend class Chartsheet;
     friend class WorksheetPrivate;
     friend class Document;
     friend class DocumentPrivate;
 
-    Workbook();
+    Workbook(Workbook::CreateFlag flag);
 
     void saveToXmlFile(QIODevice *device) const;
-    QByteArray saveToXmlData() const;
     bool loadFromXmlFile(QIODevice *device);
-    bool loadFromXmlData(const QByteArray &data);
-    Relationships &relationships();
 
     SharedStrings *sharedStrings() const;
     Styles *styles();
     Theme *theme();
     QList<QImage> images();
     QList<Drawing *> drawings();
-    void prepareDrawings();
+    QList<QSharedPointer<AbstractSheet> > getSheetsByTypes(AbstractSheet::SheetType type) const;
     QStringList worksheetNames() const;
-    Worksheet *addWorksheet(const QString &name, int sheetId);
-    WorkbookPrivate * const d_ptr;
+    AbstractSheet *addSheet(const QString &name, int sheetId, AbstractSheet::SheetType type = AbstractSheet::ST_WorkSheet);
 };
 
 QT_END_NAMESPACE_XLSX

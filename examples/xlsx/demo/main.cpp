@@ -93,10 +93,10 @@ int main()
     Document xlsx;
 
     //---------------------------------------------------------------
-    //The default sheet is "Sheet1"
-    xlsx.renameWorksheet("Sheet1", "Aligns & Borders");
-    xlsx.setColumn("B", "B", 20);
-    xlsx.setColumn("H", "H", 12);
+    //Create the first sheet (Otherwise, default "Sheet1" will be created)
+    xlsx.addSheet("Aligns & Borders");
+    xlsx.setColumnWidth(2, 20); //Column B
+    xlsx.setColumnWidth(8, 12); //Column H
     xlsx.currentWorksheet()->setGridLinesVisible(false);
 
     //Alignment
@@ -138,7 +138,7 @@ int main()
 
     //---------------------------------------------------------------
     //Create the second sheet.
-    xlsx.addWorksheet("Fonts");
+    xlsx.addSheet("Fonts");
 
     xlsx.write("B3", "Normal");
     Format font_bold;
@@ -178,8 +178,8 @@ int main()
 
     //---------------------------------------------------------------
     //Create the third sheet.
-    xlsx.addWorksheet("Formulas");
-    xlsx.setColumn("A", "B", 40);
+    xlsx.addSheet("Formulas");
+    xlsx.setColumnWidth(1, 2, 40);
     Format rAlign;
     rAlign.setHorizontalAlignment(Format::AlignRight);
     Format lAlign;
@@ -241,8 +241,8 @@ int main()
 
     //---------------------------------------------------------------
     //Create the fourth sheet.
-    xlsx.addWorksheet("NumFormats");
-    xlsx.setColumn("B", "B", 40);
+    xlsx.addSheet("NumFormats");
+    xlsx.setColumnWidth(2, 40);
     writeInternalNumFormatsCell(xlsx, 4, 2.5681, 2);
     writeInternalNumFormatsCell(xlsx, 5, 2500000, 3);
     writeInternalNumFormatsCell(xlsx, 6, -500, 5);
@@ -259,7 +259,7 @@ int main()
 
     //---------------------------------------------------------------
     //Create the fifth sheet.
-    xlsx.addWorksheet("Merging");
+    xlsx.addSheet("Merging");
     Format centerAlign;
     centerAlign.setHorizontalAlignment(Format::AlignHCenter);
     centerAlign.setVerticalAlignment(Format::AlignVCenter);
@@ -272,7 +272,7 @@ int main()
 
     //---------------------------------------------------------------
     //Create the fifth sheet.
-    xlsx.addWorksheet("Grouping");
+    xlsx.addSheet("Grouping");
     qsrand(QDateTime::currentMSecsSinceEpoch());
     for (int row=2; row<31; ++row) {
         for (int col=1; col<=10; ++col)
@@ -282,7 +282,7 @@ int main()
     xlsx.groupRows(11, 26, false);
     xlsx.groupRows(15, 17, false);
     xlsx.groupRows(20, 22, false);
-    xlsx.setColumn(1, 10, 10.0);
+    xlsx.setColumnWidth(1, 10, 10.0);
     xlsx.groupColumns(1, 2);
     xlsx.groupColumns(5, 8, false);
 

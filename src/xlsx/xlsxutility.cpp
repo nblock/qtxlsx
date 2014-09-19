@@ -35,14 +35,13 @@
 
 namespace QXlsx {
 
-int intPow(int x, int p)
+bool parseXsdBoolean(const QString &value, bool defaultValue)
 {
-  if (p == 0) return 1;
-  if (p == 1) return x;
-
-  int tmp = intPow(x, p/2);
-  if (p%2 == 0) return tmp * tmp;
-  else return x * tmp * tmp;
+    if (value == QLatin1String("1") || value == QLatin1String("true"))
+        return true;
+    if (value == QLatin1String("0") || value == QLatin1String("false"))
+        return false;
+    return defaultValue;
 }
 
 QStringList splitPath(const QString &path)
@@ -73,10 +72,17 @@ double datetimeToNumber(const QDateTime &dt, bool is1904)
     QDateTime epoch(is1904 ? QDate(1904, 1, 1): QDate(1899, 12, 31), QTime(0,0));
 
     double excel_time = epoch.msecsTo(dt) / (1000*60*60*24.0);
+
+#if QT_VERSION >= 0x050200
+    if (dt.isDaylightTime())    // Add one hour if the date is Daylight
+        excel_time += 1.0 / 24.0;
+#endif
+
     if (!is1904 && excel_time > 59) {//31+28
         //Account for Excel erroneously treating 1900 as a leap year.
         excel_time += 1;
     }
+
     return excel_time;
 }
 
@@ -93,88 +99,50 @@ QDateTime datetimeFromNumber(double num, bool is1904)
     qint64 msecs = static_cast<qint64>(num * 1000*60*60*24.0 + 0.5);
     QDateTime epoch(is1904 ? QDate(1904, 1, 1): QDate(1899, 12, 31), QTime(0,0));
 
-    return epoch.addMSecs(msecs);
+    QDateTime dt = epoch.addMSecs(msecs);
+
+#if QT_VERSION >= 0x050200
+    // Remove one hour to see whether the date is Daylight
+    QDateTime dt2 = dt.addMSecs(-3600);
+    if (dt2.isDaylightTime())
+        return dt2;
+#endif
+
+    return dt;
 }
 
-QPoint xl_cell_to_rowcol(const QString &cell_str)
-{
-    if (cell_str.isEmpty())
-        return QPoint(-1, -1);
-    QRegularExpression re(QStringLiteral("^([A-Z]{1,3})(\\d+)$"));
-    QRegularExpressionMatch match = re.match(cell_str);
-    if (match.hasMatch()) {
-        QString col_str = match.captured(1);
-        QString row_str = match.captured(2);
-        int col = 0;
-        int expn = 0;
-        for (int i=col_str.size()-1; i>-1; --i) {
-            col += (col_str[i].unicode() - 'A' + 1) * intPow(26, expn);
-            expn++;
-        }
+/*
+  Creates a valid sheet name
+    minimum length is 1
+    maximum length is 31
+    doesn't contain special chars: / \ ? * ] [ :
+    Sheet names must not begin or end with ' (apostrophe)
 
-        int row = row_str.toInt();
-        return QPoint(row, col);
-    } else {
-        return QPoint(-1, -1); //...
-    }
+  Invalid characters are replaced by one space character ' '.
+ */
+QString createSafeSheetName(const QString &nameProposal)
+{
+    if (nameProposal.isEmpty())
+        return QString();
+
+    QString ret = nameProposal;
+    if (nameProposal.contains(QRegularExpression(QStringLiteral("[/\\\\?*\\][:]+"))))
+        ret.replace(QRegularExpression(QStringLiteral("[/\\\\?*\\][:]+")), QStringLiteral(" "));
+    while(ret.contains(QRegularExpression(QStringLiteral("^\\s*'\\s*|\\s*'\\s*$"))))
+        ret.remove(QRegularExpression(QStringLiteral("^\\s*'\\s*|\\s*'\\s*$")));
+    ret = ret.trimmed();
+    if (ret.size() > 31)
+        ret = ret.left(31);
+    return ret;
 }
 
-QString xl_col_to_name(int col_num)
+/*
+ * whether the string s starts or ends with space
+ */
+bool isSpaceReserveNeeded(const QString &s)
 {
-    QString col_str;
-
-    int remainder;
-    while (col_num) {
-        remainder = col_num % 26;
-        if (remainder == 0)
-            remainder = 26;
-        col_str.prepend(QChar('A'+remainder-1));
-        col_num = (col_num - 1) / 26;
-    }
-
-    return col_str;
-}
-
-int xl_col_name_to_value(const QString &col_str)
-{
-    QRegularExpression re(QStringLiteral("^([A-Z]{1,3})$"));
-    QRegularExpressionMatch match = re.match(col_str);
-    if (match.hasMatch()) {
-        int col = 0;
-        int expn = 0;
-        for (int i=col_str.size()-1; i>-1; --i) {
-            col += (col_str[i].unicode() - 'A' + 1) * intPow(26, expn);
-            expn++;
-        }
-
-        return col;
-    }
-    return -1;
-}
-
-QString xl_rowcol_to_cell(int row, int col, bool row_abs, bool col_abs)
-{
-    QString cell_str;
-    if (col_abs)
-        cell_str.append(QLatin1Char('$'));
-    cell_str.append(xl_col_to_name(col));
-    if (row_abs)
-        cell_str.append(QLatin1Char('$'));
-    cell_str.append(QString::number(row));
-    return cell_str;
-}
-
-QString xl_rowcol_to_cell_fast(int row, int col)
-{
-    static QMap<int, QString> col_cache;
-    QString  col_str;
-    if (col_cache.contains(col)) {
-        col_str = col_cache[col];
-    } else {
-        col_str = xl_col_to_name(col);
-        col_cache[col] = col_str;
-    }
-    return col_str + QString::number(row);
+    QString spaces(QStringLiteral(" \t\n\r"));
+    return !s.isEmpty() && (spaces.contains(s.at(0))||spaces.contains(s.at(s.length()-1)));
 }
 
 } //namespace QXlsx

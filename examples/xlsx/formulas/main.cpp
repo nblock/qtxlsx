@@ -12,7 +12,7 @@ int main()
     //![0]
 
     //![1]
-    xlsx.setColumn("A", "B", 40);
+    xlsx.setColumnWidth(1, 2, 40);
     Format rAlign;
     rAlign.setHorizontalAlignment(Format::AlignRight);
     Format lAlign;
@@ -50,7 +50,7 @@ int main()
     //![1]
 
     //![2]
-    xlsx.addWorksheet("ArrayFormula");
+    xlsx.addSheet("ArrayFormula");
     Worksheet *sheet = xlsx.currentWorksheet();
 
     for (int row=2; row<20; ++row) {

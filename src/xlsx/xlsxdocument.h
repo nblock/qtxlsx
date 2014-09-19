@@ -28,6 +28,7 @@
 
 #include "xlsxglobal.h"
 #include "xlsxformat.h"
+#include "xlsxworksheet.h"
 #include <QObject>
 #include <QVariant>
 class QIODevice;
@@ -36,11 +37,12 @@ class QImage;
 QT_BEGIN_NAMESPACE_XLSX
 
 class Workbook;
-class Worksheet;
 class Cell;
 class CellRange;
 class DataValidation;
 class ConditionalFormatting;
+class Chart;
+class CellReference;
 
 class DocumentPrivate;
 class Q_XLSX_EXPORT Document : public QObject
@@ -54,24 +56,45 @@ public:
     Document(QIODevice *device, QObject *parent=0);
     ~Document();
 
-    int write(const QString &cell, const QVariant &value, const Format &format=Format());
-    int write(int row, int col, const QVariant &value, const Format &format=Format());
-    QVariant read(const QString &cell) const;
+    bool write(const CellReference &cell, const QVariant &value, const Format &format=Format());
+    bool write(int row, int col, const QVariant &value, const Format &format=Format());
+    QVariant read(const CellReference &cell) const;
     QVariant read(int row, int col) const;
-    int insertImage(int row, int column, const QImage &image, double xOffset=0, double yOffset=0, double xScale=1, double yScale=1);
-    int mergeCells(const CellRange &range, const Format &format=Format());
-    int mergeCells(const QString &range, const Format &format=Format());
-    int unmergeCells(const CellRange &range);
-    int unmergeCells(const QString &range);
-    bool setRow(int row, double height, const Format &format=Format(), bool hidden=false);
-    bool setColumn(int colFirst, int colLast, double width, const Format &format=Format(), bool hidden=false);
-    bool setColumn(const QString &colFirst, const QString &colLast, double width, const Format &format=Format(), bool hidden=false);
+    bool insertImage(int row, int col, const QImage &image);
+    Chart *insertChart(int row, int col, const QSize &size);
+    bool mergeCells(const CellRange &range, const Format &format=Format());
+    bool unmergeCells(const CellRange &range);
+
+    bool setColumnWidth(const CellRange &range, double width);
+    bool setColumnFormat(const CellRange &range, const Format &format);
+    bool setColumnHidden(const CellRange &range, bool hidden);
+    bool setColumnWidth(int column, double width);
+    bool setColumnFormat(int column, const Format &format);
+    bool setColumnHidden(int column, bool hidden);
+    bool setColumnWidth(int colFirst, int colLast, double width);
+    bool setColumnFormat(int colFirst, int colLast, const Format &format);
+    bool setColumnHidden(int colFirst, int colLast, bool hidden);
+    double columnWidth(int column);
+    Format columnFormat(int column);
+    bool isColumnHidden(int column);
+
+    bool setRowHeight(int row, double height);
+    bool setRowFormat(int row, const Format &format);
+    bool setRowHidden(int row, bool hidden);
+    bool setRowHeight(int rowFirst, int rowLast, double height);
+    bool setRowFormat(int rowFirst, int rowLast, const Format &format);
+    bool setRowHidden(int rowFirst, int rowLast, bool hidden);
+
+    double rowHeight(int row);
+    Format rowFormat(int row);
+    bool isRowHidden(int row);
+
     bool groupRows(int rowFirst, int rowLast, bool collapsed = true);
     bool groupColumns(int colFirst, int colLast, bool collapsed = true);
     bool addDataValidation(const DataValidation &validation);
     bool addConditionalFormatting(const ConditionalFormatting &cf);
 
-    Cell *cellAt(const QString &cell) const;
+    Cell *cellAt(const CellReference &cell) const;
     Cell *cellAt(int row, int col) const;
 
     bool defineName(const QString &name, const QString &formula, const QString &comment=QString(), const QString &scope=QString());
@@ -82,21 +105,19 @@ public:
     void setDocumentProperty(const QString &name, const QString &property);
     QStringList documentPropertyNames() const;
 
-    QStringList worksheetNames() const;
-    bool addWorksheet(const QString &name = QString());
-    bool insertWorkSheet(int index, const QString &name = QString());
-    bool selectWorksheet(const QString &name);
-    bool renameWorksheet(const QString &oldName, const QString &newName);
-    bool copyWorksheet(const QString &srcName, const QString &distName = QString());
-    bool moveWorksheet(const QString &srcName, int distIndex);
-    bool deleteWorksheet(const QString &name);
+    QStringList sheetNames() const;
+    bool addSheet(const QString &name = QString(), AbstractSheet::SheetType type = AbstractSheet::ST_WorkSheet);
+    bool insertSheet(int index, const QString &name = QString(), AbstractSheet::SheetType type = AbstractSheet::ST_WorkSheet);
+    bool selectSheet(const QString &name);
+    bool renameSheet(const QString &oldName, const QString &newName);
+    bool copySheet(const QString &srcName, const QString &distName = QString());
+    bool moveSheet(const QString &srcName, int distIndex);
+    bool deleteSheet(const QString &name);
 
     Workbook *workbook() const;
-    Worksheet *worksheet(const QString &sheetName) const;
+    AbstractSheet *sheet(const QString &sheetName) const;
+    AbstractSheet *currentSheet() const;
     Worksheet *currentWorksheet() const;
-    Q_DECL_DEPRECATED bool setSheetName(const QString &name);
-    Q_DECL_DEPRECATED void setCurrentWorksheet(int index);
-    Q_DECL_DEPRECATED void setCurrentWorksheet(const QString &name);
 
     bool save() const;
     bool saveAs(const QString &xlsXname) const;

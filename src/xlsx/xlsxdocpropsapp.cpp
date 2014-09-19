@@ -34,7 +34,8 @@
 
 namespace QXlsx {
 
-DocPropsApp::DocPropsApp()
+DocPropsApp::DocPropsApp(CreateFlag flag)
+    :AbstractOOXmlFile(flag)
 {
 }
 
@@ -130,19 +131,8 @@ void DocPropsApp::saveToXmlFile(QIODevice *device) const
     writer.writeEndDocument();
 }
 
-QByteArray DocPropsApp::saveToXmlData() const
+bool DocPropsApp::loadFromXmlFile(QIODevice *device)
 {
-    QByteArray data;
-    QBuffer buffer(&data);
-    buffer.open(QIODevice::WriteOnly);
-    saveToXmlFile(&buffer);
-
-    return data;
-}
-
-DocPropsApp DocPropsApp::loadFromXmlFile(QIODevice *device)
-{
-    DocPropsApp props;
     QXmlStreamReader reader(device);
     while (!reader.atEnd()) {
          QXmlStreamReader::TokenType token = reader.readNext();
@@ -151,9 +141,9 @@ DocPropsApp DocPropsApp::loadFromXmlFile(QIODevice *device)
                  continue;
 
              if (reader.name() == QStringLiteral("Manager")) {
-                 props.setProperty(QStringLiteral("manager"), reader.readElementText());
+                 setProperty(QStringLiteral("manager"), reader.readElementText());
              } else if (reader.name() == QStringLiteral("Company")) {
-                 props.setProperty(QStringLiteral("company"), reader.readElementText());
+                 setProperty(QStringLiteral("company"), reader.readElementText());
              }
          }
 
@@ -161,15 +151,7 @@ DocPropsApp DocPropsApp::loadFromXmlFile(QIODevice *device)
              qDebug("Error when read doc props app file.");
          }
     }
-    return props;
-}
-
-DocPropsApp DocPropsApp::loadFromXmlData(const QByteArray &data)
-{
-    QBuffer buffer;
-    buffer.setData(data);
-    buffer.open(QIODevice::ReadOnly);
-    return loadFromXmlFile(&buffer);
+    return true;
 }
 
 } //namespace

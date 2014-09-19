@@ -38,6 +38,7 @@
 
 #include "xlsxglobal.h"
 #include "xlsxformat.h"
+#include "xlsxabstractooxmlfile.h"
 #include <QSharedPointer>
 #include <QHash>
 #include <QList>
@@ -63,20 +64,18 @@ struct XlsxFormatNumberData
     QString formatString;
 };
 
-class XLSX_AUTOTEST_EXPORT Styles
+class XLSX_AUTOTEST_EXPORT Styles : public AbstractOOXmlFile
 {
 public:
-    Styles(bool createEmpty=false);
+    Styles(CreateFlag flag);
     ~Styles();
     void addXfFormat(const Format &format, bool force=false);
     Format xfFormat(int idx) const;
     void addDxfFormat(const Format &format, bool force=false);
     Format dxfFormat(int idx) const;
 
-    QByteArray saveToXmlData();
-    void saveToXmlFile(QIODevice *device);
+    void saveToXmlFile(QIODevice *device) const;
     bool loadFromXmlFile(QIODevice *device);
-    bool loadFromXmlData(const QByteArray &data);
 
     QColor getColorByIndex(int idx);
 
@@ -86,17 +85,18 @@ private:
 
     void fixNumFmt(const Format &format);
 
-    void writeNumFmts(QXmlStreamWriter &writer);
-    void writeFonts(QXmlStreamWriter &writer);
-    void writeFont(QXmlStreamWriter &writer, const Format &font, bool isDxf = false);
-    void writeFills(QXmlStreamWriter &writer);
-    void writeFill(QXmlStreamWriter &writer, const Format &fill, bool isDxf = false);
-    void writeBorders(QXmlStreamWriter &writer);
-    void writeBorder(QXmlStreamWriter &writer, const Format &border, bool isDxf = false);
-    void writeSubBorder(QXmlStreamWriter &writer, const QString &type, int style, const XlsxColor &color);
-    void writeCellXfs(QXmlStreamWriter &writer);
-    void writeDxfs(QXmlStreamWriter &writer);
-    void writeDxf(QXmlStreamWriter &writer, const Format &format);
+    void writeNumFmts(QXmlStreamWriter &writer) const;
+    void writeFonts(QXmlStreamWriter &writer) const;
+    void writeFont(QXmlStreamWriter &writer, const Format &font, bool isDxf = false) const;
+    void writeFills(QXmlStreamWriter &writer) const;
+    void writeFill(QXmlStreamWriter &writer, const Format &fill, bool isDxf = false) const;
+    void writeBorders(QXmlStreamWriter &writer) const;
+    void writeBorder(QXmlStreamWriter &writer, const Format &border, bool isDxf = false) const;
+    void writeSubBorder(QXmlStreamWriter &writer, const QString &type, int style, const XlsxColor &color) const;
+    void writeCellXfs(QXmlStreamWriter &writer) const;
+    void writeDxfs(QXmlStreamWriter &writer) const;
+    void writeDxf(QXmlStreamWriter &writer, const Format &format) const;
+    void writeColors(QXmlStreamWriter &writer) const;
 
     bool readNumFmts(QXmlStreamReader &reader);
     bool readFonts(QXmlStreamReader &reader);
@@ -124,6 +124,7 @@ private:
     QHash<QByteArray, Format> m_bordersHash;
 
     QVector<QColor> m_indexedColors;
+    bool m_isIndexedColorsDefault;
 
     QList<Format> m_xf_formatsList;
     QHash<QByteArray, Format> m_xf_formatsHash;

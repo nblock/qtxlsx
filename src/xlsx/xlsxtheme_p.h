@@ -35,20 +35,22 @@
 //
 // We mean it.
 //
+#include "xlsxabstractooxmlfile.h"
 
 #include <QString>
 class QIODevice;
 
 namespace QXlsx {
 
-class Theme
+class Theme : public AbstractOOXmlFile
 {
 public:
-    Theme();
+    Theme(CreateFlag flag);
 
     void saveToXmlFile(QIODevice *device) const;
     QByteArray saveToXmlData() const;
-    void loadFromXmlData(const QByteArray &data);
+    bool loadFromXmlData(const QByteArray &data);
+    bool loadFromXmlFile(QIODevice *device);
 
     QByteArray xmlData;
 };

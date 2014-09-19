@@ -201,7 +201,8 @@ const char *defaultXmlData =
         "</a:theme>"
         ;
 
-Theme::Theme()
+Theme::Theme(CreateFlag flag)
+    :AbstractOOXmlFile(flag)
 {
 }
 
@@ -221,9 +222,16 @@ QByteArray Theme::saveToXmlData() const
         return xmlData;
 }
 
-void Theme::loadFromXmlData(const QByteArray &data)
+bool Theme::loadFromXmlData(const QByteArray &data)
 {
     xmlData = data;
+    return true;
+}
+
+bool Theme::loadFromXmlFile(QIODevice *device)
+{
+    xmlData = device->readAll();
+    return true;
 }
 
 }
