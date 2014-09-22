@@ -1,3 +1,9 @@
+qtxlsx (0.2.2-5) unstable; urgency=medium
+
+  * [92bfed5] Explicitely call Qt5 qmake.
+
+ -- Florian Preinstorfer <fp@xell.at>  Mon, 22 Sep 2014 15:00:40 +0200
+
 qtxlsx (0.2.2-4) unstable; urgency=medium
 
   * [4abfdd9] Don't depend on metapackage.
