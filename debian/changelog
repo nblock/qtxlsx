@@ -1,3 +1,9 @@
+qtxlsx (0.2.2-4) unstable; urgency=medium
+
+  * [4abfdd9] Don't depend on metapackage.
+
+ -- Florian Preinstorfer <fp@xell.at>  Mon, 22 Sep 2014 14:36:53 +0200
+
 qtxlsx (0.2.2-3) unstable; urgency=medium
 
   * [3c32b08] Add libqt5xlsx0-doc.
