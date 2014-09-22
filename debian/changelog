@@ -1,3 +1,9 @@
+qtxlsx (0.2.2+git20140919-2) unstable; urgency=medium
+
+  * [43f9061] Don't depend on metapackage.
+
+ -- Florian Preinstorfer <fp@xell.at>  Mon, 22 Sep 2014 14:39:04 +0200
+
 qtxlsx (0.2.2+git20140919-1) unstable; urgency=medium
 
   * [dbe4440] Imported Upstream version 0.2.2+git20140919
